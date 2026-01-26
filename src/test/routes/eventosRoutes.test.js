@@ -19,6 +19,8 @@ after(async () => {
 
 describe('GET em /eventos', () => {
   it('Deve retornar uma lista de eventos', done => {
+    process.env.EVENTO_FLAG = 'true'
+
     requester
       .get('/eventos')
       .set('Accept', 'application/json')
@@ -32,6 +34,18 @@ describe('GET em /eventos', () => {
         expect(res.body[0]).to.have.property('autor_id')
         expect(res.body[0]).to.have.property('created_at')
         expect(res.body[0]).to.have.property('updated_at')
+        done()
+      })
+  })
+
+  it('Deve retornar erro 404', done => {
+    process.env.EVENTO_FLAG = 'false'
+
+    requester
+      .get('/eventos')
+      .set('Accept', 'application/json')
+      .end((_err, res) => {
+        expect(res.status).to.equal(404)
         done()
       })
   })
