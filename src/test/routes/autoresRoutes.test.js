@@ -7,14 +7,19 @@ import db from '../../db/dbconfig.js'
 chai.use(chaiHttp)
 const { expect } = chai
 
+let requester
+before(() => {
+  requester = chai.request.agent(app)
+})
+
 after(async () => {
+  requester.close()
   await db.destroy()
 })
 
 describe('GET em /autores', () => {
   it('Deve retornar uma lista de autores', done => {
-    chai
-      .request(app)
+    requester
       .get('/autores')
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -28,8 +33,7 @@ describe('GET em /autores', () => {
 
   it('Deve retornar um autor', done => {
     const idAutor = 1
-    chai
-      .request(app)
+    requester
       .get(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -43,13 +47,25 @@ describe('GET em /autores', () => {
 
   it('Não deve retornar um autor com id inválido', done => {
     const idAutor = 'A'
-    chai
-      .request(app)
+    requester
       .get(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
         expect(res.status).to.equal(404)
         expect(res.body).to.have.property('message').eql(`id ${idAutor} não encontrado`)
+        done()
+      })
+  })
+
+  it('Deve retorna uma lista de livros de um autor', done => {
+    const autorId = 1
+    requester
+      .get(`/autores/${autorId}/livros`)
+      .set('Accept', 'application/json')
+      .end((_, res) => {
+        expect(res.status).to.equal(200)
+        expect(res.body).to.have.property('autor')
+        expect(res.body.livros).to.be.an('array')
         done()
       })
   })
@@ -61,8 +77,7 @@ describe('POST em /autores', () => {
       nome: 'Teste Testinho',
       nacionalidade: 'Testelândia',
     }
-    chai
-      .request(app)
+    requester
       .post('/autores')
       .set('Accept', 'application/json')
       .send(autor)
@@ -75,8 +90,7 @@ describe('POST em /autores', () => {
 
   it('Não deve criar um autor ao receber body vazio', done => {
     const autor = {}
-    chai
-      .request(app)
+    requester
       .post('/autores')
       .set('Accept', 'application/json')
       .send(autor)
@@ -95,8 +109,7 @@ describe('PUT em /autores', () => {
       nome: 'Outro Nome',
       nacionalidade: 'Tangamandápio',
     }
-    chai
-      .request(app)
+    requester
       .put(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .send(autorAtualizado)
@@ -115,8 +128,7 @@ describe('PUT em /autores', () => {
     const autorAtualizado = {
       name: 'Atualizando Novamente',
     }
-    chai
-      .request(app)
+    requester
       .put(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .send(autorAtualizado)
@@ -131,8 +143,7 @@ describe('PUT em /autores', () => {
 describe('DELETE em /autores', () => {
   it('Deve deletar um autor', done => {
     const idAutor = 4
-    chai
-      .request(app)
+    requester
       .delete(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -144,8 +155,7 @@ describe('DELETE em /autores', () => {
 
   it('Não deve deletar um autor com id inválido', done => {
     const idAutor = 'A'
-    chai
-      .request(app)
+    requester
       .delete(`/autores/${idAutor}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
