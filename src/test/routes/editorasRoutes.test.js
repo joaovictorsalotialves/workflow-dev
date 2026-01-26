@@ -7,14 +7,19 @@ import db from '../../db/dbconfig.js'
 chai.use(chaiHttp)
 const { expect } = chai
 
+let requester
+before(() => {
+  requester = chai.request.agent(app)
+})
+
 after(async () => {
+  requester.close()
   await db.destroy()
 })
 
 describe('GET em /editoras', () => {
   it('Deve retornar uma lista de editoras', done => {
-    chai
-      .request(app)
+    requester
       .get('/editoras')
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -29,8 +34,7 @@ describe('GET em /editoras', () => {
 
   it('Deve retornar uma editora', done => {
     const idEditora = 1
-    chai
-      .request(app)
+    requester
       .get(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -45,8 +49,7 @@ describe('GET em /editoras', () => {
 
   it('Não deve retornar uma editora com id inválido', done => {
     const idEditora = 'A'
-    chai
-      .request(app)
+    requester
       .get(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -64,8 +67,7 @@ describe('POST em /editoras', () => {
       cidade: 'Testelândia',
       email: 'e@e.com',
     }
-    chai
-      .request(app)
+    requester
       .post('/editoras')
       .set('Accept', 'application/json')
       .send(editora)
@@ -78,8 +80,7 @@ describe('POST em /editoras', () => {
 
   it('Não deve criar uma editora ao receber body vazio', done => {
     const editora = {}
-    chai
-      .request(app)
+    requester
       .post('/editoras')
       .set('Accept', 'application/json')
       .send(editora)
@@ -98,8 +99,7 @@ describe('PUT em /editoras', () => {
       nome: 'Editora Testada Dois',
       cidade: 'Tangamandápio',
     }
-    chai
-      .request(app)
+    requester
       .put(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .send(editoraAtualizada)
@@ -118,8 +118,7 @@ describe('PUT em /editoras', () => {
     const autorAtualizado = {
       name: 'Atualizando Novamente',
     }
-    chai
-      .request(app)
+    requester
       .put(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .send(autorAtualizado)
@@ -134,8 +133,7 @@ describe('PUT em /editoras', () => {
 describe('DELETE em /editoras', () => {
   it('Deve deletar uma editora', done => {
     const idEditora = 1
-    chai
-      .request(app)
+    requester
       .delete(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -147,8 +145,7 @@ describe('DELETE em /editoras', () => {
 
   it('Não deve deletar uma editora com id inválido', done => {
     const idEditora = 'A'
-    chai
-      .request(app)
+    requester
       .delete(`/editoras/${idEditora}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {

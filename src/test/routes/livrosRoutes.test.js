@@ -7,14 +7,19 @@ import db from '../../db/dbconfig.js'
 chai.use(chaiHttp)
 const { expect } = chai
 
+let requester
+before(() => {
+  requester = chai.request.agent(app)
+})
+
 after(async () => {
+  requester.close()
   await db.destroy()
 })
 
 describe('GET em /livros', () => {
   it('Deve retornar uma lista de livros', done => {
-    chai
-      .request(app)
+    requester
       .get('/livros')
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -30,8 +35,7 @@ describe('GET em /livros', () => {
 
   it('Deve retornar um livro', done => {
     const idLivro = 1
-    chai
-      .request(app)
+    requester
       .get(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -47,8 +51,7 @@ describe('GET em /livros', () => {
 
   it('Não deve retornar um livro com id inválido', done => {
     const idLivro = 'A'
-    chai
-      .request(app)
+    requester
       .get(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -67,8 +70,7 @@ describe('POST em /livros', () => {
       editora_id: 2,
       autor_id: 2,
     }
-    chai
-      .request(app)
+    requester
       .post('/livros')
       .set('Accept', 'application/json')
       .send(livro)
@@ -81,8 +83,7 @@ describe('POST em /livros', () => {
 
   it('Não deve criar um livro ao receber body vazio', done => {
     const editora = {}
-    chai
-      .request(app)
+    requester
       .post('/livros')
       .set('Accept', 'application/json')
       .send(editora)
@@ -101,8 +102,7 @@ describe('PUT em /livros', () => {
       titulo: 'Árvore e Folha',
       paginas: 333,
     }
-    chai
-      .request(app)
+    requester
       .put(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .send(livroAtualizado)
@@ -121,8 +121,7 @@ describe('PUT em /livros', () => {
     const livroAtualizado = {
       titulo: 'Os Filhos de Húrin',
     }
-    chai
-      .request(app)
+    requester
       .put(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .send(livroAtualizado)
@@ -137,8 +136,7 @@ describe('PUT em /livros', () => {
 describe('DELETE em /livros', () => {
   it('Deve deletar um livro', done => {
     const idLivro = 1
-    chai
-      .request(app)
+    requester
       .delete(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
@@ -150,8 +148,7 @@ describe('DELETE em /livros', () => {
 
   it('Não deve deletar um livro com id inválido', done => {
     const idLivro = 'A'
-    chai
-      .request(app)
+    requester
       .delete(`/livros/${idLivro}`)
       .set('Accept', 'application/json')
       .end((_err, res) => {
